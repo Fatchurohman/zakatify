@@ -1,5 +1,3 @@
-<!-- Version 2.0 - Update Zakatify fatur62 -->
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -10,6 +8,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#059669">
 
+  <!-- CDN Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment-hijri@2.1.2/moment-hijri.min.js"></script>
@@ -113,8 +112,8 @@
         </div>
         
         <div id="boxHaulInfo" class="haul-info">
-          <p>Setara Tanggal Hijriyah: <span id="infoHijriah"></span></p>
-          <p>Jatuh Tempo Haul Berikutnya: <span id="infoJatuhTempo" class="text-amber"></span></p>
+          <p>Setara Tanggal Hijriyah: <span id="infoHijriah">-</span></p>
+          <p>Jatuh Tempo Haul Berikutnya: <span id="infoJatuhTempo" class="text-amber">-</span></p>
           <p style="font-size: 9px; color: #94a3b8; margin-top: 4px; font-style: italic;">*Sistem otomatis menyesuaikan siklus 354 hari (Kalender Hijriyah).</p>
         </div>
       </div>
@@ -124,7 +123,13 @@
           <label>Pencatatan Rincian Aset</label>
           <span id="badgeProfil" class="badge-mode">Mode UMKM</span>
         </div>
-        <div id="formContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
+        <div id="formContainer" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Default Form Langsung Ada (Bukan Kosong) -->
+          <div class="form-group"><label>Uang Tunai Kas Bisnis & Tabungan Usaha (Rp)</label><input type="number" id="field1" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Nilai Modal Stok Barang Dagangan (Rp)</label><input type="number" id="field2" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Piutang Lancar (Tagihan ke Pembeli) (Rp)</label><input type="number" id="field3" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Utang Usaha / Tagihan Supplier (Pemotong) (Rp)</label><input type="number" id="utang" oninput="hitungZakat()" placeholder="0"></div>
+        </div>
       </div>
 
       <div class="result-box">
@@ -151,12 +156,6 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-    const supabaseClient = (SUPABASE_URL !== 'YOUR_SUPABASE_URL') 
-      ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
-      : null;
-
     const HARGA_EMAS_PER_GRAM = 1000000; 
     const NISHAB_RUPIAH = 85 * HARGA_EMAS_PER_GRAM;
 
@@ -195,11 +194,23 @@
       }
 
       boxInfo.classList.add('show');
-      const m = moment(inputDate, 'YYYY-MM-DD');
-      document.getElementById('infoHijriah').innerText = `${m.format('iD iMMMM iYYYY')} H`;
 
-      const nextHaul = moment(inputDate, 'YYYY-MM-DD').add(354, 'days');
-      document.getElementById('infoJatuhTempo').innerText = nextHaul.format('DD MMMM YYYY');
+      try {
+        if (typeof moment !== 'undefined') {
+          const m = moment(inputDate, 'YYYY-MM-DD');
+          document.getElementById('infoHijriah').innerText = `${m.format('iD iMMMM iYYYY')} H`;
+          const nextHaul = moment(inputDate, 'YYYY-MM-DD').add(354, 'days');
+          document.getElementById('infoJatuhTempo').innerText = nextHaul.format('DD MMMM YYYY');
+        } else {
+          // Fallback tanpa library moment
+          const d = new Date(inputDate);
+          d.setDate(d.getDate() + 354);
+          document.getElementById('infoHijriah').innerText = "Terhitung otomatis (+354 hari)";
+          document.getElementById('infoJatuhTempo').innerText = d.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+      } catch (err) {
+        console.log(err);
+      }
     }
 
     function hitungZakat() {
@@ -226,51 +237,13 @@
       document.getElementById('totalZakat').innerText = 'Rp ' + zakatWajib.toLocaleString('id-ID');
     }
 
-    async function simpanKeSupabase() {
-      if (!supabaseClient) {
-        alert('Data berhasil dihitung! (Tambahkan Key Supabase milikmu di kode index.html untuk fitur simpan cloud).');
-        return;
-      }
-
-      const profil = document.getElementById('tipeProfil').value;
-      const tglMasehi = document.getElementById('tglMasehi').value;
-
-      const { data, error } = await supabaseClient.from('zakat_records').insert([
-        { tipe_profil: profil, tanggal_mulai_haul: tglMasehi, created_at: new Date() }
-      ]);
-
-      if (error) {
-        alert('Gagal menyimpan: ' + error.message);
-      } else {
-        alert('Data zakat berhasil disimpan!');
-      }
+    function simpanKeSupabase() {
+      alert('Data zakat berhasil dihitung!');
     }
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
+      navigator.serviceWorker.register('sw.js').catch(e => console.log(e));
     }
-
-    let deferredPrompt;
-    const btnInstall = document.getElementById('btnInstall');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      btnInstall.classList.add('show');
-    });
-
-    btnInstall.addEventListener('click', async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-          btnInstall.classList.remove('show');
-        }
-        deferredPrompt = null;
-      }
-    });
-
-    switchProfil();
   </script>
 </body>
 </html>
