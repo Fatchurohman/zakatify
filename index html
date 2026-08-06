@@ -3,18 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zakatify - Manajemen Zakat Bisnis & Personal.</title>
+  <title>Zakatify - Manajemen Zakat Bisnis & Personal</title>
   
-  <!-- PWA & Theme Meta -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#059669">
 
-  <!-- CDN Logic Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment-hijri@2.1.2/moment-hijri.min.js"></script>
 
-  <!-- STYLING CSS UTAMA -->
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: #f1f5f9; color: #1e293b; padding: 16px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
@@ -24,7 +21,6 @@
     .header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
     .header p { font-size: 13px; color: #d1fae5; margin-top: 4px; }
     
-    /* STYLE DEVELOPER & BULATAN KELAP-KELIP */
     .dev-badge {
       display: inline-flex;
       align-items: center;
@@ -46,18 +42,9 @@
       animation: pulse-animation 1.5s infinite;
     }
     @keyframes pulse-animation {
-      0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7);
-      }
-      70% {
-        transform: scale(1);
-        box-shadow: 0 0 0 6px rgba(52, 211, 153, 0);
-      }
-      100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
-      }
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(52, 211, 153, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
     }
 
     .btn-install { display: none; margin: 12px auto 0 auto; background: #ffffff; color: #047857; border: none; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
@@ -95,13 +82,10 @@
 <body>
 
   <div class="container">
-    
-    <!-- HEADER -->
     <div class="header">
       <h1>Zakatify</h1>
       <p>Manajemen Zakat Bisnis & Personal Tanpa Ribet</p>
       
-      <!-- Badge Developer dengan Bulatan Kelap-Kelip -->
       <div class="dev-badge">
         <div class="pulsing-dot"></div>
         <span>Developer : fatur62</span>
@@ -111,8 +95,6 @@
     </div>
 
     <div class="content">
-
-      <!-- SEGMENTASI PROFIL -->
       <div class="form-group">
         <label>Pilih Profil Kamu:</label>
         <select id="tipeProfil" onchange="switchProfil()">
@@ -121,7 +103,6 @@
         </select>
       </div>
 
-      <!-- MASALAH 1 & 3: PENENTUAN HAUL & KONVERSI MASEHI-HIJRIYAH -->
       <div class="box-haul">
         <h2>📅 Penentuan Haul Zakat (1 Tahun Hijriyah)</h2>
         <div class="form-group">
@@ -136,18 +117,14 @@
         </div>
       </div>
 
-      <!-- MASALAH 2: FORM INPUT ASET DINAMIS -->
       <div>
         <div style="margin-bottom: 8px;">
           <label>Pencatatan Rincian Aset</label>
           <span id="badgeProfil" class="badge-mode">Mode UMKM</span>
         </div>
-        <div id="formContainer" style="display: flex; flex-direction: column; gap: 10px;">
-          <!-- Disuntik via JS -->
-        </div>
+        <div id="formContainer" style="display: flex; flex-direction: column; gap: 10px;"></div>
       </div>
 
-      <!-- HASIL PERHITUNGAN -->
       <div class="result-box">
         <div class="result-row">
           <span>Estimasi Nishab (±85g Emas)</span>
@@ -167,9 +144,7 @@
         </div>
       </div>
 
-      <!-- AKSI & SUPABASE -->
       <button onclick="simpanKeSupabase()" class="btn-save">💾 Simpan Catatan Zakat</button>
-
     </div>
   </div>
 
@@ -218,7 +193,6 @@
       }
 
       boxInfo.classList.add('show');
-
       const m = moment(inputDate, 'YYYY-MM-DD');
       document.getElementById('infoHijriah').innerText = `${m.format('iD iMMMM iYYYY')} H`;
 
