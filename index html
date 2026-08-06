@@ -9,112 +9,138 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#059669">
 
-  <!-- CDN Dependencies -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- CDN Logic Dependencies (Supabase & Moment Hijri) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/moment-hijri@2.1.2/moment-hijri.min.js"></script>
-</head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen p-4 md:p-8">
 
-  <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+  <!-- STYLING CSS UTAMA (Anti-Gagal / Tanpa Eksternal CSS yang Rewel) -->
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: #f1f5f9; color: #1e293b; padding: 16px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+    .container { width: 100%; max-width: 500px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
+    
+    .header { background-color: #059669; color: white; padding: 24px; text-align: center; }
+    .header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .header p { font-size: 13px; color: #d1fae5; margin-top: 4px; }
+    
+    .btn-install { display: none; margin: 12px auto 0 auto; background: #ffffff; color: #047857; border: none; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .btn-install.show { display: inline-block; }
+
+    .content { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
+    select, input { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc; color: #1e293b; }
+    select:focus, input:focus { border-color: #059669; background: #fff; box-shadow: 0 0 0 3px rgba(5,150,105,0.1); }
+
+    .box-haul { background: #ecfdf5; border: 1px solid #a7f3d0; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .box-haul h2 { font-size: 13px; font-weight: 700; color: #065f46; }
+    .haul-info { background: #ffffff; border: 1px solid #d1fae5; padding: 10px; border-radius: 8px; font-size: 12px; color: #334155; display: none; }
+    .haul-info.show { display: block; }
+    .haul-info p span { font-weight: bold; color: #047857; }
+    .haul-info p .text-amber { color: #d97706; }
+
+    .badge-mode { font-size: 10px; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 12px; font-weight: 600; float: right; }
+
+    .result-box { background: #0f172a; color: #ffffff; padding: 16px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .result-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #94a3b8; }
+    .result-row span.val { font-weight: 600; color: #f1f5f9; }
+    hr { border: none; border-top: 1px solid #1e293b; margin: 4px 0; }
+    .zakat-total { display: flex; justify-content: space-between; align-items: center; }
+    .zakat-total .label-zakat { font-size: 12px; font-weight: bold; color: #34d399; }
+    .zakat-total .status-desc { font-size: 10px; color: #94a3b8; }
+    .zakat-total .nominal { font-size: 22px; font-weight: 800; color: #34d399; }
+
+    .btn-save { width: 100%; background: #059669; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 14px; cursor: pointer; transition: background 0.2s; }
+    .btn-save:hover { background: #047857; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
     
     <!-- HEADER -->
-    <div class="bg-emerald-600 p-6 text-white text-center">
-      <h1 class="text-3xl font-extrabold tracking-tight">Zakatify</h1>
-      <p class="text-emerald-100 text-xs md:text-sm mt-1">Manajemen Zakat Bisnis & Personal Tanpa Ribet</p>
-      
-      <!-- Tombol Instal PWA -->
-      <button id="btnInstall" class="hidden mt-4 bg-white text-emerald-700 px-4 py-2 rounded-full text-xs font-bold shadow-md hover:bg-emerald-50 transition">
-        📲 Instal Aplikasi Zakatify
-      </button>
+    <div class="header">
+      <h1>Zakatify</h1>
+      <p>Manajemen Zakat Bisnis & Personal Tanpa Ribet</p>
+      <button id="btnInstall" class="btn-install">📲 Instal Aplikasi Zakatify</button>
     </div>
 
-    <div class="p-6 space-y-6">
+    <div class="content">
 
       <!-- SEGMENTASI PROFIL -->
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Profil Kamu:</label>
-        <select id="tipeProfil" onchange="switchProfil()" class="w-full border-2 border-slate-200 p-3 rounded-xl bg-slate-50 font-semibold text-emerald-700 focus:outline-none focus:border-emerald-500">
+      <div class="form-group">
+        <label>Pilih Profil Kamu:</label>
+        <select id="tipeProfil" onchange="switchProfil()">
           <option value="umkm">🏪 Pebisnis / UMKM / Trader (Aset Dagang & Putaran)</option>
           <option value="karyawan">💼 Karyawan / PNS / Profesional (Gaji & Tabungan)</option>
         </select>
       </div>
 
       <!-- MASALAH 1 & 3: PENENTUAN HAUL & KONVERSI MASEHI-HIJRIYAH -->
-      <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100 space-y-3">
-        <h2 class="text-sm font-bold text-emerald-900 flex items-center gap-1.5">
-          📅 Penentuan Haul Zakat (1 Tahun Hijriyah)
-        </h2>
-        <div>
-          <label class="block text-xs text-slate-600 mb-1">Kapan Tabungan/Aset Pertama Kali Mencapai Nishab? (Masehi)</label>
-          <input type="date" id="tglMasehi" onchange="hitungHaul()" class="w-full border border-slate-300 p-2.5 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+      <div class="box-haul">
+        <h2>📅 Penentuan Haul Zakat (1 Tahun Hijriyah)</h2>
+        <div class="form-group">
+          <label style="color: #047857;">Kapan Tabungan/Aset Pertama Kali Mencapai Nishab? (Masehi)</label>
+          <input type="date" id="tglMasehi" onchange="hitungHaul()">
         </div>
         
-        <div id="boxHaulInfo" class="hidden text-xs space-y-1 bg-white p-3 rounded-lg border border-emerald-200">
-          <p class="text-slate-600">Setara Tanggal Hijriyah: <span id="infoHijriah" class="font-bold text-emerald-700"></span></p>
-          <p class="text-slate-600">Jatuh Tempo Haul Berikutnya: <span id="infoJatuhTempo" class="font-bold text-amber-600"></span></p>
-          <p class="text-[10px] text-slate-400 italic mt-1">*Sistem otomatis menyesuaikan siklus 354 hari (Kalender Hijriyah).</p>
+        <div id="boxHaulInfo" class="haul-info">
+          <p>Setara Tanggal Hijriyah: <span id="infoHijriah"></span></p>
+          <p>Jatuh Tempo Haul Berikutnya: <span id="infoJatuhTempo" class="text-amber"></span></p>
+          <p style="font-size: 9px; color: #94a3b8; margin-top: 4px; font-style: italic;">*Sistem otomatis menyesuaikan siklus 354 hari (Kalender Hijriyah).</p>
         </div>
       </div>
 
       <!-- MASALAH 2: FORM INPUT ASET DINAMIS -->
       <div>
-        <div class="flex justify-between items-center mb-2">
-          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pencatatan Rincian Aset</label>
-          <span class="text-[11px] text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full font-medium" id="badgeProfil">Mode UMKM</span>
+        <div style="margin-bottom: 8px;">
+          <label>Pencatatan Rincian Aset</label>
+          <span id="badgeProfil" class="badge-mode">Mode UMKM</span>
         </div>
-        
-        <div id="formContainer" class="space-y-3">
-          <!-- Form dinamis disuntik via JS -->
+        <div id="formContainer" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Disuntik via JS -->
         </div>
       </div>
 
       <!-- HASIL PERHITUNGAN -->
-      <div class="bg-slate-900 text-white p-5 rounded-xl space-y-3 shadow-inner">
-        <div class="flex justify-between items-center text-xs text-slate-400">
+      <div class="result-box">
+        <div class="result-row">
           <span>Estimasi Nishab (±85g Emas)</span>
-          <span class="font-semibold text-slate-200" id="infoNishab">Rp 85.000.000</span>
+          <span class="val" id="infoNishab">Rp 85.000.000</span>
         </div>
-        <div class="flex justify-between items-center">
-          <span class="text-xs text-slate-300">Total Aset Bersih:</span>
-          <span id="totalAset" class="font-bold text-base text-slate-100">Rp 0</span>
+        <div class="result-row">
+          <span>Total Aset Bersih:</span>
+          <span class="val" id="totalAset" style="font-size: 14px;">Rp 0</span>
         </div>
-        <hr class="border-slate-800">
-        <div class="flex justify-between items-center">
+        <hr>
+        <div class="zakat-total">
           <div>
-            <p class="text-xs text-emerald-400 font-bold">Wajib Zakat Mal (2.5%):</p>
-            <p id="statusNishab" class="text-[10px] text-slate-400">Belum mencapai nishab</p>
+            <div class="label-zakat">Wajib Zakat Mal (2.5%):</div>
+            <div id="statusNishab" class="status-desc">Belum mencapai nishab</div>
           </div>
-          <span id="totalZakat" class="font-extrabold text-2xl text-emerald-400">Rp 0</span>
+          <div id="totalZakat" class="nominal">Rp 0</div>
         </div>
       </div>
 
       <!-- AKSI & SUPABASE -->
-      <button onclick="simpanKeSupabase()" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-700 active:scale-[0.99] transition text-sm">
-        💾 Simpan Catatan Zakat
-      </button>
+      <button onclick="simpanKeSupabase()" class="btn-save">💾 Simpan Catatan Zakat</button>
 
     </div>
   </div>
 
   <script>
-    // -------------------------------------------------------------
-    // CONFIG SUPABASE (Ganti dengan Key Supabase milikmu)
-    // -------------------------------------------------------------
+    // Config Supabase (Ganti dengan Key Supabase milikmu jika ada)
     const SUPABASE_URL = 'YOUR_SUPABASE_URL';
     const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
     const supabaseClient = (SUPABASE_URL !== 'YOUR_SUPABASE_URL') 
       ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
       : null;
 
-    // Asumsi standar Nishab Emas 85 gram
     const HARGA_EMAS_PER_GRAM = 1000000; 
     const NISHAB_RUPIAH = 85 * HARGA_EMAS_PER_GRAM;
 
-    // -------------------------------------------------------------
-    // LOGIKA PROFIL DINAMIS (UMKM VS KARYAWAN)
-    // -------------------------------------------------------------
     function switchProfil() {
       const profil = document.getElementById('tipeProfil').value;
       const container = document.getElementById('formContainer');
@@ -123,74 +149,41 @@
       if (profil === 'karyawan') {
         badge.innerText = 'Mode Karyawan / PNS';
         container.innerHTML = `
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Total Tabungan & E-Wallet (Rp)</label>
-            <input type="number" id="field1" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Investasi (Reksadana, Saham, Deposito) (Rp)</label>
-            <input type="number" id="field2" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Emas Batangan / Logam Mulia (Nilai Rp)</label>
-            <input type="number" id="field3" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Utang/Cicilan Jatuh Tempo Bulan Ini (Pemotong) (Rp)</label>
-            <input type="number" id="utang" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
+          <div class="form-group"><label>Total Tabungan & E-Wallet (Rp)</label><input type="number" id="field1" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Investasi (Reksadana, Saham, Deposito) (Rp)</label><input type="number" id="field2" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Emas Batangan / Logam Mulia (Nilai Rp)</label><input type="number" id="field3" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Utang/Cicilan Jatuh Tempo Bulan Ini (Pemotong) (Rp)</label><input type="number" id="utang" oninput="hitungZakat()" placeholder="0"></div>
         `;
       } else {
         badge.innerText = 'Mode UMKM / Bisnis';
         container.innerHTML = `
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Uang Tunai Kas Bisnis & Tabungan Usaha (Rp)</label>
-            <input type="number" id="field1" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Nilai Modal Stok Barang Dagangan (Rp)</label>
-            <input type="number" id="field2" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Piutang Lancar (Tagihan ke Pembeli) (Rp)</label>
-            <input type="number" id="field3" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
-          <div>
-            <label class="block text-xs text-slate-500 mb-1">Utang Usaha / Tagihan Supplier (Pemotong) (Rp)</label>
-            <input type="number" id="utang" oninput="hitungZakat()" placeholder="0" class="w-full border border-slate-300 p-2.5 rounded-lg text-sm">
-          </div>
+          <div class="form-group"><label>Uang Tunai Kas Bisnis & Tabungan Usaha (Rp)</label><input type="number" id="field1" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Nilai Modal Stok Barang Dagangan (Rp)</label><input type="number" id="field2" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Piutang Lancar (Tagihan ke Pembeli) (Rp)</label><input type="number" id="field3" oninput="hitungZakat()" placeholder="0"></div>
+          <div class="form-group"><label>Utang Usaha / Tagihan Supplier (Pemotong) (Rp)</label><input type="number" id="utang" oninput="hitungZakat()" placeholder="0"></div>
         `;
       }
       hitungZakat();
     }
 
-    // -------------------------------------------------------------
-    // LOGIKA PENENTUAN HAUL (MASEHI <-> HIJRIYAH)
-    // -------------------------------------------------------------
     function hitungHaul() {
       const inputDate = document.getElementById('tglMasehi').value;
       const boxInfo = document.getElementById('boxHaulInfo');
       
       if (!inputDate) {
-        boxInfo.classList.add('hidden');
+        boxInfo.classList.remove('show');
         return;
       }
 
-      boxInfo.classList.remove('hidden');
+      boxInfo.classList.add('show');
 
-      // Format Hijriyah
       const m = moment(inputDate, 'YYYY-MM-DD');
-      const hijriDate = m.format('iD iMMMM iYYYY');
-      document.getElementById('infoHijriah').innerText = `${hijriDate} H`;
+      document.getElementById('infoHijriah').innerText = `${m.format('iD iMMMM iYYYY')} H`;
 
-      // Tambah 354 Hari (1 Tahun Hijriyah) untuk jatuh tempo Masehi berikutnya
       const nextHaul = moment(inputDate, 'YYYY-MM-DD').add(354, 'days');
       document.getElementById('infoJatuhTempo').innerText = nextHaul.format('DD MMMM YYYY');
     }
 
-    // -------------------------------------------------------------
-    // LOGIKA HITUNG ZAKAT
-    // -------------------------------------------------------------
     function hitungZakat() {
       const f1 = Number(document.getElementById('field1')?.value) || 0;
       const f2 = Number(document.getElementById('field2')?.value) || 0;
@@ -199,26 +192,22 @@
 
       const totalAsetBersih = (f1 + f2 + f3) - utang;
       let zakatWajib = 0;
-
       const statusEl = document.getElementById('statusNishab');
 
       if (totalAsetBersih >= NISHAB_RUPIAH) {
         zakatWajib = totalAsetBersih * 0.025;
         statusEl.innerText = '✅ Aset memenuhi syarat Nishab';
-        statusEl.className = 'text-[10px] text-emerald-400 font-bold';
+        statusEl.style.color = '#34d399';
       } else {
         zakatWajib = 0;
         statusEl.innerText = '❌ Belum mencapai batas minimum Nishab';
-        statusEl.className = 'text-[10px] text-amber-400';
+        statusEl.style.color = '#94a3b8';
       }
 
       document.getElementById('totalAset').innerText = 'Rp ' + totalAsetBersih.toLocaleString('id-ID');
       document.getElementById('totalZakat').innerText = 'Rp ' + zakatWajib.toLocaleString('id-ID');
     }
 
-    // -------------------------------------------------------------
-    // SIMPAN DATA KE SUPABASE
-    // -------------------------------------------------------------
     async function simpanKeSupabase() {
       if (!supabaseClient) {
         alert('Data berhasil dihitung! (Tambahkan Key Supabase milikmu di kode index.html untuk fitur simpan cloud).');
@@ -229,11 +218,7 @@
       const tglMasehi = document.getElementById('tglMasehi').value;
 
       const { data, error } = await supabaseClient.from('zakat_records').insert([
-        { 
-          tipe_profil: profil,
-          tanggal_mulai_haul: tglMasehi,
-          created_at: new Date()
-        }
+        { tipe_profil: profil, tanggal_mulai_haul: tglMasehi, created_at: new Date() }
       ]);
 
       if (error) {
@@ -243,9 +228,6 @@
       }
     }
 
-    // -------------------------------------------------------------
-    // LOGIKA REGISTER SERVICE WORKER & INSTAL PWA
-    // -------------------------------------------------------------
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
     }
@@ -256,7 +238,7 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      btnInstall.classList.remove('hidden');
+      btnInstall.classList.add('show');
     });
 
     btnInstall.addEventListener('click', async () => {
@@ -264,13 +246,12 @@
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {
-          btnInstall.classList.add('hidden');
+          btnInstall.classList.remove('show');
         }
         deferredPrompt = null;
       }
     });
 
-    // Inisialisasi awal
     switchProfil();
   </script>
 </body>
